@@ -14,4 +14,5 @@
   modules = import ./modules; # NixOS modules
   overlays = import ./overlays; # nixpkgs overlays
 
+  cosevka = pkgs.callPackage ./pkgs/cosevka {};
 }
