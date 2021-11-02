@@ -12,6 +12,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Supported Nixpkgs/NixOS versions.
+        nixPath:
+          - nixpkgs=channel:nixos-unstable
+          - nixpkgs=channel:nixpkgs-unstable
+          - nixpkgs=channel:nixos-21.05
+
         # Set this to notify the global nur package registry that changes are
         # available.
         #
@@ -19,6 +25,7 @@ jobs:
         # https://github.com/nix-community/NUR/blob/master/repos.json
         nurRepo:
           - sigprof
+
         # Set this to cache your build results in cachix for faster builds
         # in CI and for everyone who uses your cache.
         #
@@ -29,10 +36,7 @@ jobs:
         # in your repository settings in Github found at https://github.com/<your_githubname>/nur-packages/settings/secrets
         cachixName:
           - sigprof
-        nixPath:
-          - nixpkgs=channel:nixos-unstable
-          - nixpkgs=channel:nixpkgs-unstable
-          - nixpkgs=channel:nixos-21.05
+
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
