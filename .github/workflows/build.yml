@@ -10,6 +10,15 @@ on:
     # TIP: Choose a random time here so not all repositories are build at once:
     # https://www.random.org/clock-times/?num=1&earliest=01%3A00&latest=08%3A00&interval=5&format=html&rnd=new
     - cron:  '30 1 * * *'
+
+env:
+  # Set this to notify the global nur package registry that changes are
+  # available.
+  #
+  # The repo name as used in
+  # https://github.com/nix-community/NUR/blob/master/repos.json
+  NUR_REPO: sigprof
+
 jobs:
   tests:
     strategy:
@@ -20,14 +29,6 @@ jobs:
           - nixpkgs=channel:nixos-unstable
           - nixpkgs=channel:nixpkgs-unstable
           - nixpkgs=channel:nixos-21.05
-
-        # Set this to notify the global nur package registry that changes are
-        # available.
-        #
-        # The repo name as used in
-        # https://github.com/nix-community/NUR/blob/master/repos.json
-        nurRepo:
-          - sigprof
 
         # Set this to cache your build results in cachix for faster builds
         # in CI and for everyone who uses your cache.
@@ -68,5 +69,11 @@ jobs:
           -I $PWD
     - name: Build nix packages
       run: nix run 'nixpkgs#nix-build-uncached' -- ci.nix -A cacheOutputs
+
+  notify:
+    needs:
+      - tests
+    runs-on: ubuntu-latest
+    steps:
     - name: Trigger NUR update
-      run: curl -XPOST "https://nur-update.herokuapp.com/update?repo=${{ matrix.nurRepo }}"
+      run: curl -XPOST "https://nur-update.herokuapp.com/update?repo=$NUR_REPO"
