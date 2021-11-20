@@ -73,6 +73,7 @@ jobs:
   notify:
     needs:
       - tests
+    if: ${{ github.ref == 'refs/heads/master' }}
     runs-on: ubuntu-latest
     steps:
     - name: Trigger NUR update
