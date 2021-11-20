@@ -69,5 +69,4 @@ jobs:
     - name: Build nix packages
       run: nix run 'nixpkgs#nix-build-uncached' -- ci.nix -A cacheOutputs
     - name: Trigger NUR update
-      if: false # not registered yet
       run: curl -XPOST "https://nur-update.herokuapp.com/update?repo=${{ matrix.nurRepo }}"
