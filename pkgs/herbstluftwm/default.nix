@@ -1,14 +1,18 @@
-{ lib, stdenv, fetchurl, cmake, pkg-config, python3, libX11, libXext, libXinerama, libXrandr, libXft, libXrender, freetype, asciidoc
-, xdotool, xorgserver, xsetroot, xterm, runtimeShell
-, nixosTests }:
+{ lib, stdenv, fetchFromGitHub, cmake, pkg-config, python3, libX11, libXext, libXinerama, libXrandr, libXft, libXfixes, libXrender
+, freetype, asciidoc, libxslt, coreutils, procps, xdotool, xorgserver, xsetroot, xterm, runtimeShell
+, nixosTests
+}:
 
 stdenv.mkDerivation rec {
   pname = "herbstluftwm";
-  version = "0.9.3";
+  version = "0.9.3+${suffix}";
+  suffix = "git20220211_${lib.substring 0 7 src.rev}";
 
-  src = fetchurl {
-    url = "https://herbstluftwm.org/tarballs/herbstluftwm-${version}.tar.gz";
-    sha256 = "01f1bv9axjhw1l2gwhdwahljssj0h8q7a1bqwbpnwvln0ayv39qb";
+  src = fetchFromGitHub {
+    owner = "herbstluftwm";
+    repo = "herbstluftwm";
+    rev = "5517222fda4d10a7681e4eb59d9ba5a21cea8243";
+    hash = "sha256-v5im6+wMSzOei4MnSnvBbg7RNcKCwuECjigdi71VuVc=";
   };
 
   outputs = [
@@ -24,6 +28,7 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [
     cmake
     pkg-config
+    libxslt.bin
   ];
 
   depsBuildBuild = [
@@ -36,6 +41,7 @@ stdenv.mkDerivation rec {
     libXinerama
     libXrandr
     libXft
+    libXfixes
     libXrender
     freetype
   ];
@@ -45,7 +51,7 @@ stdenv.mkDerivation rec {
   ];
 
   postPatch = ''
-    patchShebangs doc/gendoc.py
+    patchShebangs doc/gendoc.py doc/format-doc.py doc/patch-manpage-xml.py
 
     # fix /etc/xdg/herbstluftwm paths in documentation and scripts
     grep -rlZ /etc/xdg/herbstluftwm share/ doc/ scripts/ | while IFS="" read -r -d "" path; do
@@ -54,7 +60,13 @@ stdenv.mkDerivation rec {
 
     # fix shebang in generated scripts
     substituteInPlace tests/conftest.py --replace "/usr/bin/env bash" ${runtimeShell}
+    substituteInPlace tests/test_autostart.py --replace "/usr/bin/env bash" ${runtimeShell}
     substituteInPlace tests/test_herbstluftwm.py --replace "/usr/bin/env bash" ${runtimeShell}
+
+    # workaround for PATH not getting used in some cases
+    substituteInPlace doc/patch-manpage-xml.py --replace "'xsltproc'" "'${libxslt.bin}/bin/xsltproc'"
+    substituteInPlace tests/test_autostart.py --replace "'ps'" "'${procps}/bin/ps'"
+    substituteInPlace tests/test_herbstluftwm.py --replace "'touch'" "'${coreutils}/bin/touch'"
   '';
 
   doCheck = true;
