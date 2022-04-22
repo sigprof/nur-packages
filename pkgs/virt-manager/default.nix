@@ -19,12 +19,6 @@ let
   #
   virt-manager-2 = pkgs.callPackage ./virt-manager-2.2.1.nix {
     system-libvirt = pkgs.libvirt;
-
-    # The old code still uses `stdenv.lib`, which causes deprecation warnings
-    # on 21.05.
-    stdenv = pkgs.stdenv // {
-      inherit lib;
-    };
   };
 
 in
