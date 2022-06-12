@@ -28,7 +28,6 @@ jobs:
         nixPath:
           - nixpkgs=channel:nixos-unstable
           - nixpkgs=channel:nixpkgs-unstable
-          - nixpkgs=channel:nixos-21.05
           - nixpkgs=channel:nixos-21.11
 
         # Set this to cache your build results in cachix for faster builds
