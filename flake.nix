@@ -22,15 +22,12 @@
       overlay = final: prev: nurPackageOverlay final prev;
     }
     // (
-      flake-utils.lib.eachDefaultSystem
-      (
-        system: let
-          pkgs = nixpkgs.legacyPackages.${system};
-          nurPackages = nurPackageOverlay nurPackages pkgs;
-        in rec {
-          packages = flake-utils.lib.filterPackages system nurPackages;
-        }
-      )
+      flake-utils.lib.eachDefaultSystem (system: let
+        pkgs = nixpkgs.legacyPackages.${system};
+        nurPackages = nurPackageOverlay nurPackages pkgs;
+      in rec {
+        packages = flake-utils.lib.filterPackages system nurPackages;
+      })
     )
     // (
       let
