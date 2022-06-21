@@ -1,0 +1,39 @@
+name: Flake build
+on:
+  workflow_call:
+    inputs:
+      system:
+        required: true
+        type: string
+      os:
+        required: true
+        type: string
+
+jobs:
+  flake-build:
+    name: Flake build
+    runs-on: ${{ inputs.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3.0.2
+      - name: Install nix
+        uses: cachix/install-nix-action@v17
+      - name: Setup cachix
+        uses: cachix/cachix-action@v10
+        with:
+          name: sigprof
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          extraPullNames: "pre-commit-hooks"
+      - name: Run flake check
+        run: nix flake check
+      - name: Build packages
+        run: |
+          set -o pipefail
+          packages="$( nix flake show --json | jq -r '.packages."${{inputs.system}}" | keys | .[] | @text ".#packages.${{inputs.system}}.\(.)"' )"
+          echo "Found packages:"
+          printf '  %s\n' $packages
+          echo "Building packages:"
+          nix build -L --no-link --json $packages | jq
+      - name: Test the development shell
+        run: |
+          nix develop -L '.#devShells.${{inputs.system}}.default' -c echo Ready
