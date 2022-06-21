@@ -1,4 +1,4 @@
-name: "Build and populate cache"
+name: "CI"
 on:
   pull_request:
   push:
