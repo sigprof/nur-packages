@@ -27,6 +27,13 @@ jobs:
       system: x86_64-linux
       os: ubuntu-latest
 
+  flake-x86_64-darwin:
+    uses: ./.github/workflows/flake-build.yml
+    secrets: inherit
+    with:
+      system: x86_64-darwin
+      os: macos-latest
+
   tests:
     needs:
       - flake-x86_64-linux
