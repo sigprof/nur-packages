@@ -268,7 +268,6 @@ jobs:
       always()
       && (needs.setup_flake.result == 'success')
       && (needs.setup_nur.result == 'success' || needs.setup_nur.result == 'skipped')
-      && false
     uses: ./.github/workflows/ci-per-system.yml
     with:
       system: x86_64-darwin
