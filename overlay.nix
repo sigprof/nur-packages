@@ -11,4 +11,4 @@
 final: prev: let
   self = import ./nur.nix {pkgs = prev;};
 in
-  self.nurPackages.${pkgs.system}
+  self.nurPackages.${prev.system}
