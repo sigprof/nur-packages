@@ -14,7 +14,7 @@
     devshell.inputs.flake-utils.follows = "flake-utils";
   };
 
-  outputs = {
+  outputs = inputs @ {
     self,
     nixpkgs,
     flake-utils,
@@ -28,10 +28,13 @@
     }
     // (
       flake-utils.lib.eachDefaultSystem (system: let
+        inherit (flake-utils.lib) filterPackages flattenTree;
         pkgs = nixpkgs.legacyPackages.${system};
+        legacyPackages = pkgs.callPackage ./pkgs {inherit inputs;};
+        packages = filterPackages system (flattenTree legacyPackages);
         nurPackages = nurPackageOverlay nurPackages pkgs;
-      in rec {
-        packages = flake-utils.lib.filterPackages system nurPackages;
+      in {
+        inherit packages legacyPackages;
       })
     )
     // (
@@ -63,5 +66,8 @@
             devshell.startup.pre-commit-hooks.text = self.checks.${system}.pre-commit.shellHook;
           };
         })
-    );
+    )
+    // {
+      lib = import ./lib inputs;
+    };
 }
