@@ -23,7 +23,7 @@
   }:
     {
       lib = import ./lib inputs;
-      overlay = import ./overlay.nix;
+      overlays.default = import ./overlay.nix;
     }
     // (
       flake-utils.lib.eachDefaultSystem (system: let
