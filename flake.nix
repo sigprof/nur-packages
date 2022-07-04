@@ -20,11 +20,10 @@
     flake-utils,
     pre-commit-hooks,
     devshell,
-  }: let
-    nurPackageOverlay = import ./overlay.nix;
-  in
+  }:
     {
-      overlay = final: prev: nurPackageOverlay final prev;
+      lib = import ./lib inputs;
+      overlay = import ./overlay.nix;
     }
     // (
       flake-utils.lib.eachDefaultSystem (system: let
@@ -32,7 +31,6 @@
         pkgs = nixpkgs.legacyPackages.${system};
         legacyPackages = pkgs.callPackage ./pkgs {inherit inputs;};
         packages = filterPackages system (flattenTree legacyPackages);
-        nurPackages = nurPackageOverlay nurPackages pkgs;
       in {
         inherit packages legacyPackages;
       })
@@ -66,8 +64,5 @@
             devshell.startup.pre-commit-hooks.text = self.checks.${system}.pre-commit.shellHook;
           };
         })
-    )
-    // {
-      lib = import ./lib inputs;
-    };
+    );
 }
