@@ -80,6 +80,9 @@
     then concatMap (n: concatMapAttrsToListRecursive' mapper (rootPath ++ [n]) rootValue.${n}) (attrNames rootValue)
     else [];
 
+  # flattenAttrs ::
+  #   ([string] -> any -> bool) -> ([string] -> any -> bool) -> ([string] -> string) -> set|any -> set
+  #
   # Convert a nested attribute set into a flat one.
   #
   # Parameters:
