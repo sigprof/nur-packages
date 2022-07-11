@@ -40,7 +40,7 @@ getReleaseList() {
   local url="https://archive.mozilla.org/pub/${app}/releases/"
   local index="$tmpdir/releaseIndex-$app"
   local list="$tmpdir/releaseList-$app"
-  curl --silent -o "$index" "$url"
+  curl -o "$index" "$url"
   xmllint --html --xpath '//a/text()' "$index" | \
     sed -e '/^[^0-9]/d' -e '/funnelcake/d' -e 's,/$,,' -e '/b/d' -e '/rc/d' | \
     sort --reverse --version-sort \
@@ -150,8 +150,8 @@ for appKey in "${!appMajorToVersion[@]}"; do
   majorKey="${majorNumber}${maybeESR}"
   url="${releaseUrl[$app]}"
 
-  curl --silent -o $HOME/shasums "$url$version/SHA512SUMS"
-  curl --silent -o $HOME/shasums.asc "$url$version/SHA512SUMS.asc"
+  curl -o $HOME/shasums "$url$version/SHA512SUMS"
+  curl -o $HOME/shasums.asc "$url$version/SHA512SUMS.asc"
   gpgv --keyring=$GNUPGHOME/pubring.kbx $HOME/shasums.asc $HOME/shasums
 
   for arch in linux-x86_64 linux-i686; do
