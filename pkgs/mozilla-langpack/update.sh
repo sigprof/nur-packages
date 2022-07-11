@@ -1,5 +1,5 @@
 #! /usr/bin/env nix-shell
-#! nix-shell --pure -i bash -p cacert coreutils curl gnugrep gnupg gnused jq libxml2.bin
+#! nix-shell --pure -i bash -p cacert coreutils curl git gnugrep gnupg gnused jq libxml2.bin nix
 
 set -eux -o pipefail
 
@@ -24,7 +24,14 @@ export GNUPGHOME="$tmpdir/gnupghome"
 # Get the signing key to verify the signatures on hash lists.
 gpg --receive-keys 14F26682D0916CDD81E37B6D61B7B526D98F0353
 
+# URL and version list file for a particular app, indexed by the app name.
 declare -A releaseUrl releaseList
+
+# getReleaseList appName
+#
+# Prepare the URL and version list file for the specified app.  Downloads the
+# version list if that had not been done before.
+#
 getReleaseList() {
   local app="$1" && shift
   if [ -n "${releaseUrl[$app]:-}" ] && [ -n "${releaseList[$app]:-}" ]; then
@@ -42,6 +49,13 @@ getReleaseList() {
   releaseList[$app]="$list"
 }
 
+# getAppLatestVersion appName majorNumber maybeESR
+#
+# Outputs the latest version of the app specified in `appName` with the major
+# number specified in `majorNumber` and the ESR status specified in `maybeESR`
+# (which should be either "" or "esr").  If `majorNumber` is empty, outputs the
+# latest available version of the app with the specified ESR status.
+#
 getAppLatestVersion() {
   local app="$1" && shift
   local majorNumber="$1" && shift
@@ -61,7 +75,17 @@ getAppLatestVersion() {
     fi
 }
 
+# The latest version for the given `${app}:${majorNumber}:${maybeESR}`
+# combination.
 declare -A appMajorToVersion
+
+# processAppNameWithVersion "${app}-${appVersion}${maybeESR}"
+#
+# Parses the app name with the version number appended after `-` and optional
+# `esr` designation at the end, then finds the latest available version with
+# the same major version number and ESR status and saves the result in
+# `appMajorToVersion`.
+#
 processAppNameWithVersion() {
   local nameWithVersion="$1" && shift
   local app="${nameWithVersion%-*}"
@@ -79,6 +103,19 @@ processAppNameWithVersion() {
     fi
   fi
 }
+
+# If there are no command line parameters, use the default list of packages.
+if [ $# = 0 ]; then
+  defaultAppNames=(firefox firefox-esr thunderbird)
+  # Get the list of packages from the `nixpkgs` input of the current flake.
+  flakeUrl="$( cd "$source_dir" && nix flake metadata --json | jq -r '.url' )"
+  currentSystem="$( nix eval --raw --impure --expr 'builtins.currentSystem' )"
+  for pkg in "${defaultAppNames[@]}"; do
+    # `--impure` is needed to work with a dirty flake
+    nameWithVersion="$( nix eval --no-warn-dirty --impure --raw --expr "(builtins.getFlake \"$flakeUrl\").inputs.nixpkgs.legacyPackages.\"$currentSystem\".${pkg}.name" )"
+    set -- "$@" "$nameWithVersion"
+  done
+fi
 
 # Parse the command line.
 for nameWithVersion in "$@"; do
@@ -148,3 +185,5 @@ done
 umask "$original_umask"
 jq -Sn 'reduce inputs as $x ({}; . * $x)' < "$tmpdir/sources.mjson" > "$tmpdir/sources.json"
 mv "$tmpdir/sources.json" "$source_dir/sources.json"
+
+# vim:set sw=2 sta et:
