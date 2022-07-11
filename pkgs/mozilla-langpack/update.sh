@@ -144,6 +144,7 @@ EOF
   done
 done
 
+# Write the output file.
+umask "$original_umask"
 jq -Sn 'reduce inputs as $x ({}; . * $x)' < "$tmpdir/sources.mjson" > "$tmpdir/sources.json"
-
 mv "$tmpdir/sources.json" "$source_dir/sources.json"
