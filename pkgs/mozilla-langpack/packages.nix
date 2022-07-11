@@ -1,13 +1,14 @@
 {
   pkgs,
-  inputs,
+  lib,
   callPackage,
   firefox,
   firefox-esr,
   thunderbird,
 }: let
-  inherit (inputs.flake-utils.lib) filterPackages;
-  langpackPackages = args: filterPackages pkgs.system (callPackage ./langpack.nix args);
+  inherit (lib) filterAttrs isDerivation;
+  langpackPackages = args:
+    filterAttrs (n: isDerivation) (callPackage ./langpack.nix args);
 in
   {}
   // langpackPackages {mozillaApp = firefox;}

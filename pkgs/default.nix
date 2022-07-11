@@ -1,14 +1,14 @@
 {
   pkgs,
-  inputs,
+  lib,
   callPackage,
   ...
 }: let
-  inherit (inputs.flake-utils.lib) filterPackages;
+  inherit (lib) filterAttrs isDerivation;
 in
   {
     cosevka = callPackage ./cosevka {};
     terminus-font-custom = callPackage ./terminus-font-custom {};
     virt-manager = callPackage ./virt-manager {};
   }
-  // filterPackages pkgs.system (callPackage ./mozilla-langpack/packages.nix {inherit inputs;})
+  // filterAttrs (n: isDerivation) (callPackage ./mozilla-langpack/packages.nix {})
