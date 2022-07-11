@@ -162,6 +162,7 @@ for appKey in "${!appMajorToVersion[@]}"; do
         this_url="${url}${version}/${filename}"
         this_locale="${filename##*/}"
         this_locale="${this_locale%.xpi}"
+        hash="$(nix hash to-sri --type sha512 "$sha512")"
         cat >> "$tmpdir/sources.mjson" <<EOF
 {
   "${app}": {
@@ -170,7 +171,7 @@ for appKey in "${!appMajorToVersion[@]}"; do
         "${this_locale}": {
           "version": "${version}",
           "url": "${this_url}",
-          "sha512": "${sha512}"
+          "hash": "${hash}"
         }
       }
     }
