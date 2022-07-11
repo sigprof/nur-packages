@@ -11,4 +11,4 @@ in
     terminus-font-custom = callPackage ./terminus-font-custom {};
     virt-manager = callPackage ./virt-manager {};
   }
-  // (callPackage ./mozilla-langpack/packages.nix {inherit inputs;})
+  // filterPackages pkgs.system (callPackage ./mozilla-langpack/packages.nix {inherit inputs;})
