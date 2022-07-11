@@ -1,13 +1,14 @@
 {
+  inputs,
   callPackage,
-  recurseIntoAttrs,
   firefox,
   firefox-esr,
   thunderbird,
 }: let
-  langpackPackages = args: recurseIntoAttrs (callPackage ./langpack.nix args);
-in {
-  firefox-langpack = langpackPackages {mozillaApp = firefox;};
-  firefox-esr-langpack = langpackPackages {mozillaApp = firefox-esr;};
-  thunderbird-langpack = langpackPackages {mozillaApp = thunderbird;};
-}
+  inherit (inputs.flake-utils.lib) filterPackages;
+  langpackPackages = args: (callPackage ./langpack.nix args);
+in
+  {}
+  // langpackPackages {mozillaApp = firefox;}
+  // langpackPackages {mozillaApp = firefox-esr;}
+  // langpackPackages {mozillaApp = thunderbird;}

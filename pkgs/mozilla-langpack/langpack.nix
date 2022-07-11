@@ -5,6 +5,9 @@
   stdenv,
   fetchurl,
 }: let
+  inherit (builtins) head match;
+  inherit (lib) optionalString;
+
   supportedApps = {
     firefox = {
       fullName = "Firefox";
@@ -23,29 +26,35 @@
     x86_64-linux = "linux-x86_64";
   };
 
-  allLangpacks = import ./langpack-list.nix;
+  sources = lib.importJSON ./sources.json;
 
   app =
     supportedApps.${mozillaApp.pname}
-    // {
+    // rec {
       name = mozillaApp.pname;
       version = lib.getVersion mozillaApp;
-      arch = mozillaPlatforms.${mozillaApp.system};
+      major = head (match "([^.]+)\\..*" version);
+      isESR = (match ".*esr" version) != null;
+      majorKey = major + optionalString isESR "esr";
+      arch = mozillaPlatforms.${mozillaApp.system} or "";
+      langpackBaseName = "${name}${optionalString isESR "-esr"}-langpack";
     };
 
-  langpacks = allLangpacks.${app.name}.${app.version}.${app.arch};
+  langpacks = sources.${app.name}.${app.majorKey}.${app.arch} or {};
 
-  fetchLangpack = lang:
+  fetchLangpack = lang: let
+    langpack = langpacks.${lang};
+  in
     fetchurl {
-      name = "${app.name}-langpack-${lang}-${app.version}-${app.arch}.xpi";
-      url = "https://releases.mozilla.org/pub/${app.name}/releases/${app.version}/${app.arch}/xpi/${lang}.xpi";
-      sha256 = langpacks.${lang}.sha256;
+      name = "${app.name}-langpack-${lang}-${langpack.version}-${app.arch}.xpi";
+      inherit (langpack) url hash;
     };
 
   buildLangpack = appLanguage: let
     addonId = "langpack-${appLanguage}@${app.addonIdSuffix}";
+    langpack = langpacks.${appLanguage};
     langpackPackage = stdenv.mkDerivation {
-      name = "${app.name}-langpack-${appLanguage}-${app.version}";
+      name = "${app.name}-langpack-${appLanguage}-${langpack.version}";
       src = fetchLangpack appLanguage;
 
       meta = {
@@ -63,8 +72,9 @@
       '';
     };
   in
-    lib.makeOverridable langpackPackage;
+    langpackPackage;
 
-  genLangpack = appLanguage: callPackage (buildLangpack appLanguage) {};
+  makeLangpack = appLanguage: _:
+    lib.nameValuePair "${app.langpackBaseName}-${appLanguage}" (buildLangpack appLanguage);
 in
-  lib.attrsets.genAttrs (builtins.attrNames langpacks) genLangpack
+  lib.mapAttrs' makeLangpack langpacks
