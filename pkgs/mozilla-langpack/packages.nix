@@ -60,15 +60,17 @@ in
       package = mozLanguage: makeMozillaLangpack {inherit mozApp mozLanguage;};
     in
       lib.mapAttrs' (n: v: nameValuePair (packageName n) (package n)) langpacks;
-  in
-    {
-      # Always export `makeMozillaLangpack`, even if known Mozilla-originated
-      # apps are not available (maybe someone wants to override the set of
-      # supported Mozilla apps).
-      inherit makeMozillaLangpack;
-    }
-    # Export language pack packages for all available Mozilla-originated
-    # packages from the supported set and all available languages.
-    // optionalAttrs (pkgs ? firefox) (langpackPackagesFor pkgs.firefox)
-    // optionalAttrs (pkgs ? firefox-esr) (langpackPackagesFor pkgs.firefox-esr)
-    // optionalAttrs (pkgs ? thunderbird) (langpackPackagesFor pkgs.thunderbird)
+  in {
+    packages =
+      {
+        # Always export `makeMozillaLangpack`, even if known Mozilla-originated
+        # apps are not available (maybe someone wants to override the set of
+        # supported Mozilla apps).
+        inherit makeMozillaLangpack;
+      }
+      # Export language pack packages for all available Mozilla-originated
+      # packages from the supported set and all available languages.
+      // optionalAttrs (pkgs ? firefox) (langpackPackagesFor pkgs.firefox)
+      // optionalAttrs (pkgs ? firefox-esr) (langpackPackagesFor pkgs.firefox-esr)
+      // optionalAttrs (pkgs ? thunderbird) (langpackPackagesFor pkgs.thunderbird);
+  }
