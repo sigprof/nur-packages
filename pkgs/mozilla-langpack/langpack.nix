@@ -1,66 +1,47 @@
-{
-  mozillaApp,
-  callPackage,
-  lib,
-  stdenv,
-  fetchurl,
-}: let
-  inherit (builtins) head match;
-  inherit (lib) optionalString;
+# Build the language pack for the specified app and language.
+#
+# This package requires lots of parameters; see the `makeMozillaLangpack`
+# function in `./packages.nix` for a more convenient way to use it.
+#
+let
+  functions = import ./functions.nix;
+in
+  {
+    # Custom parameters.
+    mozApp,
+    mozLanguage,
+    mozAppName ? mozApp.pname,
+    mozAppVersion ? lib.getVersion mozApp,
+    mozSupportedApps,
+    mozPlatforms,
+    mozLangpackSources,
+    # Various components from Nixpkgs.
+    lib,
+    callPackage,
+    fetchurl,
+    stdenv,
+  }: let
+    inherit (builtins) elem;
+    inherit (lib) filterAttrs;
 
-  supportedApps = {
-    firefox = {
-      fullName = "Firefox";
-      addonIdSuffix = "firefox.mozilla.org";
-      extensionDir = "{ec8030f7-c20a-464f-9b0e-13a3a9e97384}";
+    app = functions.getAppInfo {
+      inherit lib mozSupportedApps mozPlatforms mozApp mozAppName mozAppVersion;
     };
-    thunderbird = {
-      fullName = "Thunderbird";
-      addonIdSuffix = "thunderbird.mozilla.org";
-      extensionDir = "{3550f703-e582-4d05-9a08-453d09bdfdc6}";
-    };
-  };
-
-  mozillaPlatforms = {
-    i686-linux = "linux-i686";
-    x86_64-linux = "linux-x86_64";
-  };
-
-  sources = lib.importJSON ./sources.json;
-
-  app =
-    supportedApps.${mozillaApp.pname}
-    // rec {
-      name = mozillaApp.pname;
-      version = lib.getVersion mozillaApp;
-      major = head (match "([^.]+)\\..*" version);
-      isESR = (match ".*esr" version) != null;
-      majorKey = major + optionalString isESR "esr";
-      arch = mozillaPlatforms.${mozillaApp.system} or "";
-      langpackBaseName = "${name}${optionalString isESR "-esr"}-langpack";
-    };
-
-  langpacks = sources.${app.name}.${app.majorKey}.${app.arch} or {};
-
-  fetchLangpack = lang: let
-    langpack = langpacks.${lang};
+    langpack = mozLangpackSources.${app.name}.${app.majorKey}.${app.arch}.${mozLanguage};
+    addonId = "langpack-${mozLanguage}@${app.addonIdSuffix}";
   in
-    fetchurl {
-      name = "${app.name}-langpack-${lang}-${langpack.version}-${app.arch}.xpi";
-      inherit (langpack) url hash;
-    };
-
-  buildLangpack = appLanguage: let
-    addonId = "langpack-${appLanguage}@${app.addonIdSuffix}";
-    langpack = langpacks.${appLanguage};
-    langpackPackage = stdenv.mkDerivation {
-      name = "${app.name}-langpack-${appLanguage}-${langpack.version}";
-      src = fetchLangpack appLanguage;
-
-      meta = {
-        inherit (mozillaApp.meta) homepage license platforms;
-        description = "${app.fullName} language pack for the '${appLanguage}' language.";
+    stdenv.mkDerivation {
+      name = "${app.name}-langpack-${mozLanguage}-${langpack.version}";
+      src = fetchurl {
+        name = "${app.name}-langpack-${mozLanguage}-${langpack.version}-${app.arch}.xpi";
+        inherit (langpack) url hash;
       };
+
+      meta =
+        filterAttrs (n: _: elem n ["homepage" "license" "platforms" "badPlatforms"]) mozApp.meta
+        // {
+          description = "${app.fullName} language pack for the '${mozLanguage}' language.";
+        };
 
       preferLocalBuild = true;
       allowSubstitutes = false;
@@ -70,11 +51,4 @@
         mkdir -p "$dst"
         install -v -m644 "$src" "$dst/${addonId}.xpi"
       '';
-    };
-  in
-    langpackPackage;
-
-  makeLangpack = appLanguage: _:
-    lib.nameValuePair "${app.langpackBaseName}-${appLanguage}" (buildLangpack appLanguage);
-in
-  lib.mapAttrs' makeLangpack langpacks
+    }
