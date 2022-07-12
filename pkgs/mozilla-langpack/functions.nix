@@ -7,10 +7,12 @@
     mozAppName ? mozApp.pname,
     mozAppVersion ? lib.getVersion mozApp,
     ...
-  }:
-    mozSupportedApps.${mozAppName}
+  }: let
+    name = lib.toLower mozAppName;
+  in
+    mozSupportedApps.${name}
     // rec {
-      name = mozAppName;
+      inherit name;
       version = mozAppVersion;
       major = builtins.head (builtins.match "([^.]+)\\..*" version);
       isESR = (builtins.match ".*esr" version) != null;
