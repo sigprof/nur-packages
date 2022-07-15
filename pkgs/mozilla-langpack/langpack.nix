@@ -44,7 +44,7 @@ in
         };
 
       preferLocalBuild = true;
-      allowSubstitutes = false;
+      # Do not use `allowSubstitutes = false;`: https://github.com/NixOS/nix/issues/4442
 
       buildCommand = ''
         dst="$out/share/mozilla/extensions/${app.extensionDir}"
