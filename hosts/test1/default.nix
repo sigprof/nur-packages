@@ -28,7 +28,13 @@ in
         sigprof.i18n.ru_RU.enable = true;
 
         environment.systemPackages = [
-          pkgs.tor-browser-bundle-bin
+          (pkgs.tor-browser-bundle-bin.overrideAttrs (old: {
+            version = "11.0.13";
+            src = pkgs.fetchurl {
+              url = "https://archive.torproject.org/tor-package-archive/torbrowser/11.0.13/tor-browser-linux64-11.0.13_en-US.tar.xz";
+              sha256 = "03pzwzgikc43pm0lga61jdzg46fanmvd1wsnb2xkq0y1ny8gsqfz";
+            };
+          }))
           self.packages.${system}.virt-manager
         ];
 
