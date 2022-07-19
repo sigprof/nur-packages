@@ -29,6 +29,7 @@ in
     };
     langpack = mozLangpackSources.${app.name}.${app.majorKey}.${app.arch}.${mozLanguage};
     addonId = "langpack-${mozLanguage}@${app.addonIdSuffix}";
+    installFilePath = "share/mozilla/extensions/${app.extensionDir}/${addonId}.xpi";
     homepage = let
       matchResult = builtins.match "([^?#]*/)[^/?#]*([?#].*)?" langpack.url;
     in
@@ -56,8 +57,6 @@ in
       # Do not use `allowSubstitutes = false;`: https://github.com/NixOS/nix/issues/4442
 
       buildCommand = ''
-        dst="$out/share/mozilla/extensions/${app.extensionDir}"
-        mkdir -p "$dst"
-        install -v -m644 "$src" "$dst/${addonId}.xpi"
+        install -v -m444 -D "$src" "$out/${installFilePath}"
       '';
     }
