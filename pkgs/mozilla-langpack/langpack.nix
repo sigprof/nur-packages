@@ -30,28 +30,28 @@ in
     langpack = mozLangpackSources.${app.name}.${app.majorKey}.${app.arch}.${mozLanguage};
     addonId = "langpack-${mozLanguage}@${app.addonIdSuffix}";
     installFilePath = "share/mozilla/extensions/${app.extensionDir}/${addonId}.xpi";
+    name = "${app.name}-langpack-${mozLanguage}-${langpack.version}";
     homepage = let
       matchResult = builtins.match "([^?#]*/)[^/?#]*([?#].*)?" langpack.url;
     in
       if matchResult == null
       then null
       else builtins.head matchResult;
+    meta =
+      filterAttrs (n: _: elem n ["homepage" "license" "platforms" "badPlatforms"]) mozApp.meta
+      // {
+        description = "${app.fullName} language pack for the '${mozLanguage}' language.";
+      }
+      // lib.optionalAttrs (homepage != null) {
+        inherit homepage;
+      };
   in
     stdenvNoCC.mkDerivation {
-      name = "${app.name}-langpack-${mozLanguage}-${langpack.version}";
+      inherit name meta;
       src = fetchurl {
         name = "${app.name}-langpack-${mozLanguage}-${langpack.version}-${app.arch}.xpi";
         inherit (langpack) url hash;
       };
-
-      meta =
-        filterAttrs (n: _: elem n ["homepage" "license" "platforms" "badPlatforms"]) mozApp.meta
-        // {
-          description = "${app.fullName} language pack for the '${mozLanguage}' language.";
-        }
-        // lib.optionalAttrs (homepage != null) {
-          inherit homepage;
-        };
 
       preferLocalBuild = true;
       # Do not use `allowSubstitutes = false;`: https://github.com/NixOS/nix/issues/4442
