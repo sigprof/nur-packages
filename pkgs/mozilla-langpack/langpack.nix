@@ -30,6 +30,7 @@ in
     langpack = mozLangpackSources.${app.name}.${app.majorKey}.${app.arch}.${mozLanguage};
     addonId = "langpack-${mozLanguage}@${app.addonIdSuffix}";
     installFilePath = "share/mozilla/extensions/${app.extensionDir}/${addonId}.xpi";
+    narHash = langpack.narHash.${installFilePath} or null;
     name = "${app.name}-langpack-${mozLanguage}-${langpack.version}";
     homepage = let
       matchResult = builtins.match "([^?#]*/)[^/?#]*([?#].*)?" langpack.url;
@@ -46,17 +47,31 @@ in
         inherit homepage;
       };
   in
-    stdenvNoCC.mkDerivation {
-      inherit name meta;
-      src = fetchurl {
-        name = "${app.name}-langpack-${mozLanguage}-${langpack.version}-${app.arch}.xpi";
-        inherit (langpack) url hash;
-      };
+    if narHash != null
+    then
+      fetchurl {
+        inherit name meta;
+        inherit (langpack) url;
+        hash = narHash;
+        recursiveHash = true;
+        downloadToTemp = true;
+        postFetch = ''
+          install -v -m444 -D "$downloadedFile" "$out/${installFilePath}"
+          rm "$downloadedFile"
+        '';
+      }
+    else
+      stdenvNoCC.mkDerivation {
+        inherit name meta;
+        src = fetchurl {
+          name = "${app.name}-langpack-${mozLanguage}-${langpack.version}-${app.arch}.xpi";
+          inherit (langpack) url hash;
+        };
 
-      preferLocalBuild = true;
-      # Do not use `allowSubstitutes = false;`: https://github.com/NixOS/nix/issues/4442
+        preferLocalBuild = true;
+        # Do not use `allowSubstitutes = false;`: https://github.com/NixOS/nix/issues/4442
 
-      buildCommand = ''
-        install -v -m444 -D "$src" "$out/${installFilePath}"
-      '';
-    }
+        buildCommand = ''
+          install -v -m444 -D "$src" "$out/${installFilePath}"
+        '';
+      }
