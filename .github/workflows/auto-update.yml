@@ -1,6 +1,9 @@
 name: auto-update
 on:
   workflow_dispatch:
+  schedule:
+    # Nominally 05:11 GMT+3, but actual start times apparently suffer from delays
+    - cron: '11 4 * * *'
 
 defaults:
   run:
