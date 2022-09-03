@@ -66,7 +66,7 @@ runs:
   using: composite
   steps:
     - name: Install Nix
-      uses: cachix/install-nix-action@92d36226ca2887d9bfe391bf2d00894d88be3b64
+      uses: cachix/install-nix-action@d64e0553100205688c0fb2fa16edb0fc8663c590
       with:
         install_url: ${{ inputs.nix-install-url }}
         install_options: ${{ inputs.nix-install-options }}
