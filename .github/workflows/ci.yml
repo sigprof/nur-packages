@@ -52,7 +52,7 @@ jobs:
       flake_jobs: ${{ steps.collect_flake_jobs.outputs.flake_jobs }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.4.2
+        uses: actions/checkout@v3.0.2
 
       - name: Install Nix
         uses: cachix/install-nix-action@92d36226ca2887d9bfe391bf2d00894d88be3b64
@@ -117,7 +117,7 @@ jobs:
       )
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.4.2
+        uses: actions/checkout@v3.0.2
 
       - name: Install Nix
         uses: cachix/install-nix-action@92d36226ca2887d9bfe391bf2d00894d88be3b64
