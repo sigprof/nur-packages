@@ -54,7 +54,7 @@ jobs:
 
       - id: rebase
         name: Rebase the eligible PRs
-        uses: peter-evans/rebase@v2.0.0
+        uses: peter-evans/rebase@v2.0.1
         with:
           token: ${{ steps.token.outputs.token }}
           include-labels: "autorebase:opt-in"
