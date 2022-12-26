@@ -44,6 +44,8 @@ env:
   nur_channels: nixpkgs-unstable nixos-unstable nixos-22.05 nixos-21.11
   nur_main_channel: nixos-22.05
 
+  NIX_CONFIG: access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+
 jobs:
   setup_flake:
     runs-on: ubuntu-latest
