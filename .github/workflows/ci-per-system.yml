@@ -50,6 +50,9 @@ on:
 
 permissions: {}
 
+env:
+  NIX_CONFIG: access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+
 jobs:
   early-checks:
     runs-on: ${{ inputs.runs-on }}
