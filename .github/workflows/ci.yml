@@ -17,6 +17,8 @@ on:
     # https://www.random.org/clock-times/?num=1&earliest=01%3A00&latest=08%3A00&interval=5&format=html&rnd=new
     - cron:  '30 1 * * *'
 
+permissions: {}
+
 defaults:
   run:
     # Use `bash` by default.  Note that, according to the documentation, the
