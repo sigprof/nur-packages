@@ -60,6 +60,53 @@ in
       package = mozLanguage: makeMozillaLangpack {inherit mozApp mozLanguage;};
     in
       lib.mapAttrs' (n: v: nameValuePair (packageName n) (package n)) langpacks;
+
+    integrateMozillaLangpackPackages = args @ {
+      mozApp,
+      mozLangpackPackages,
+    }: let
+      mozLangpackFiles = map (p: "${p}/${p.mozExtensionPath}") mozLangpackPackages;
+      mozApp' = mozApp.override {
+        extraPrefs = ''
+          pref("intl.locale.matchOS", true);
+          pref("intl.locale.requested", "");
+        '';
+      };
+    in
+      mozApp'.overrideAttrs (final: prev: {
+        # The search for `mozilla.cfg` is done because it's hard to determine
+        # the value of `libName` that has been passed to the wrapper.
+        buildCommand =
+          prev.buildCommand
+          + ''
+            mozilla_cfg="$(find "$out/lib" -name mozilla.cfg)"
+            [ -e "$mozilla_cfg" ] || {
+              echo "Cannot find mozilla.cfg in $out/lib" 1>&2
+              exit 1
+            }
+            extensions_dir="''${mozilla_cfg%/*}/distribution/extensions"
+            mkdir -p "$extensions_dir"
+            for ext in ${toString mozLangpackFiles}; do
+              ln -sLt "$extensions_dir/" "$ext"
+            done
+          '';
+      });
+
+    integratedPackagesFor = mozApp: appName: langpackPackages: let
+      packageName = lp: "${appName}-${lp.mozLanguage}";
+      package = lp:
+        integrateMozillaLangpackPackages {
+          inherit mozApp;
+          mozLangpackPackages = [lp];
+        };
+    in
+      lib.mapAttrs' (n: v: nameValuePair (packageName v) (package v)) langpackPackages;
+
+    allPackagesFor = appName: let
+      mozApp = pkgs.${appName};
+      langpackPackages = langpackPackagesFor mozApp;
+    in
+      langpackPackages // (integratedPackagesFor mozApp appName langpackPackages);
   in {
     packages =
       {
@@ -70,7 +117,7 @@ in
       }
       # Export language pack packages for all available Mozilla-originated
       # packages from the supported set and all available languages.
-      // optionalAttrs (pkgs ? firefox) (langpackPackagesFor pkgs.firefox)
-      // optionalAttrs (pkgs ? firefox-esr) (langpackPackagesFor pkgs.firefox-esr)
-      // optionalAttrs (pkgs ? thunderbird) (langpackPackagesFor pkgs.thunderbird);
+      // optionalAttrs (pkgs ? firefox) (allPackagesFor "firefox")
+      // optionalAttrs (pkgs ? firefox-esr) (allPackagesFor "firefox-esr")
+      // optionalAttrs (pkgs ? thunderbird) (allPackagesFor "thunderbird");
   }
