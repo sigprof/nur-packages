@@ -29,8 +29,8 @@ in
     };
     langpack = mozLangpackSources.${app.name}.${app.majorKey}.${app.arch}.${mozLanguage};
     addonId = "langpack-${mozLanguage}@${app.addonIdSuffix}";
-    installFilePath = "share/mozilla/extensions/${app.extensionDir}/${addonId}.xpi";
-    narHash = langpack.narHash.${installFilePath} or null;
+    mozExtensionPath = "share/mozilla/extensions/${app.extensionDir}/${addonId}.xpi";
+    narHash = langpack.narHash.${mozExtensionPath} or null;
     name = "${app.name}-langpack-${mozLanguage}-${langpack.version}";
     homepage = let
       matchResult = builtins.match "([^?#]*/)[^/?#]*([?#].*)?" langpack.url;
@@ -46,23 +46,26 @@ in
       // lib.optionalAttrs (homepage != null) {
         inherit homepage;
       };
+    passthru = {
+      inherit mozLanguage mozExtensionPath;
+    };
   in
     if narHash != null
     then
       fetchurl {
-        inherit name meta;
+        inherit name meta passthru;
         inherit (langpack) url;
         hash = narHash;
         recursiveHash = true;
         downloadToTemp = true;
         postFetch = ''
-          install -v -m444 -D "$downloadedFile" "$out/${installFilePath}"
+          install -v -m444 -D "$downloadedFile" "$out/${mozExtensionPath}"
           rm "$downloadedFile"
         '';
       }
     else
       stdenvNoCC.mkDerivation {
-        inherit name meta;
+        inherit name meta passthru;
         src = fetchurl {
           name = "${app.name}-langpack-${mozLanguage}-${langpack.version}-${app.arch}.xpi";
           inherit (langpack) url hash;
@@ -72,6 +75,6 @@ in
         # Do not use `allowSubstitutes = false;`: https://github.com/NixOS/nix/issues/4442
 
         buildCommand = ''
-          install -v -m444 -D "$src" "$out/${installFilePath}"
+          install -v -m444 -D "$src" "$out/${mozExtensionPath}"
         '';
       }
