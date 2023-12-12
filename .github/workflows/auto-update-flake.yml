@@ -65,7 +65,7 @@ jobs:
           private_key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Update ${{ matrix.input }}
-        uses: cpcloud/flake-update-action@eecde7936cf2f8b489398550ed8a4ef16c12bc1a
+        uses: cpcloud/flake-update-action@15912a3ecdd8a661fe301dad6618790c2de932e6
         with:
           dependency: ${{ matrix.input }}
           pull-request-token: ${{ steps.token.outputs.token }}
