@@ -73,7 +73,7 @@ jobs:
           extraPullNames: "pre-commit-hooks"
 
       - name: Check flake evaluation
-        run: nix flake check --no-build --show-trace
+        run: nix flake check --all-systems --no-build --show-trace
 
       - name: Collect flake jobs
         id: collect_flake_jobs
