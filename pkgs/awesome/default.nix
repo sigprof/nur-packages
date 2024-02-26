@@ -94,6 +94,7 @@ in
         xorg.libxcb
         xorg.libxshmfence
         xorg.xcbutil
+        xorg.xcbutilerrors
         xorg.xcbutilimage
         xorg.xcbutilkeysyms
         xorg.xcbutilrenderutil
