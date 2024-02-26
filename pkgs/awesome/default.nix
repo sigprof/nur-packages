@@ -41,29 +41,19 @@ assert gtk3Support -> gtk3 != null; let
 in
   stdenv.mkDerivation rec {
     pname = "awesome";
-    version = "4.3";
+    version = "4.3-unstable-2024-01-21";
 
     src = fetchFromGitHub {
       owner = "awesomewm";
       repo = "awesome";
-      rev = "v${version}";
-      sha256 = "1i7ajmgbsax4lzpgnmkyv35x8vxqi0j84a14k6zys4blx94m9yjf";
+      rev = "e6f5c7980862b7c3ec6c50c643b15ff2249310cc";
+      hash = "sha256-afviu5b86JDWd5F12Ag81JPTu9qbXi3fAlBp9tv58fI=";
     };
 
-    patches = [
-      # Pull upstream fix for -fno-common toolchain support:
-      #   https://github.com/awesomeWM/awesome/pull/3065
-      (fetchpatch {
-        name = "fno-common-prerequisite.patch";
-        url = "https://github.com/awesomeWM/awesome/commit/c5202a48708585cc33528065af8d1b1d28b1a6e0.patch";
-        sha256 = "0sv36xf0ibjcm63gn9k3bl039sqavb2b5i6d65il4bdclkc0n08b";
-      })
-      (fetchpatch {
-        name = "fno-common.patch";
-        url = "https://github.com/awesomeWM/awesome/commit/d256d9055095f27a33696e0aeda4ee20ed4fb1a0.patch";
-        sha256 = "1n3y4wnjra8blss7642jgpxnm9n92zhhjj541bb9i60m4b7bgfzz";
-      })
-    ];
+    postPatch = ''
+      patchShebangs tests/examples/_postprocess.lua
+      patchShebangs tests/examples/_postprocess_cleanup.lua
+    '';
 
     nativeBuildInputs = [
       cmake
