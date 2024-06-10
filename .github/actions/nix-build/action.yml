@@ -75,7 +75,7 @@ runs:
         extra_nix_config: ${{ inputs.nix-extra-config }}
 
     - name: Setup Cachix
-      uses: cachix/cachix-action@v14
+      uses: cachix/cachix-action@v15
       if: inputs.cachix-name
       with:
         name: ${{ inputs.cachix-name }}
