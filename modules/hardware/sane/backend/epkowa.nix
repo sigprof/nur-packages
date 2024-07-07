@@ -16,6 +16,7 @@ in {
     hardware.sane.extraBackends = [cfg.package];
     sigprof.nixpkgs.permittedUnfreePackages = [
       "iscan"
+      "iscan-gt"
       "iscan-gt-f720-bundle"
       "iscan-nt-bundle"
       "iscan-gt-s650-bundle"
@@ -25,6 +26,7 @@ in {
       "iscan-gt-x820-bundle"
       "iscan-gt-x770-bundle"
       "iscan-gt-x750-bundle"
+      "iscan-perfection-v550-bundle"
       "iscan-data"
     ];
   };
