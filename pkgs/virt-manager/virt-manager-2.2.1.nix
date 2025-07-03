@@ -36,6 +36,9 @@ with lib;
       sha256 = "06ws0agxlip6p6n3n43knsnjyd91gqhh2dadgc33wl9lx1k8vn6g";
     };
 
+    pyproject = true;
+    build-system = with python3Packages; [setuptools];
+
     nativeBuildInputs = [
       intltool
       file
