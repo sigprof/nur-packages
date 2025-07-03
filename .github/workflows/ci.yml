@@ -110,6 +110,7 @@ jobs:
           item: ${{ steps.collect_setup_checks.outputs.setup_checks }}
           system: ${{ env.this_system }}
           nix-install-url: ${{ env.CI_NIX_INSTALL_URL }}
+          maximize-build-space: 'false'
           # No `cachix-name` here to avoid recursive usage of `cachix-action`.
 
   setup_nur:
