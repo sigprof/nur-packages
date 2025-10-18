@@ -53,6 +53,12 @@ in
     postPatch = ''
       patchShebangs tests/examples/_postprocess.lua
       patchShebangs tests/examples/_postprocess_cleanup.lua
+
+      # Fix build with CMake 4
+      # https://github.com/awesomeWM/awesome/pull/4030#issuecomment-3370822668
+      substituteInPlace {,tests/examples/}CMakeLists.txt \
+        --replace-fail 'cmake_minimum_required(VERSION 3.0.0)' 'cmake_minimum_required(VERSION 3.10)' \
+        --replace-warn 'cmake_policy(VERSION 2.6)' 'cmake_policy(VERSION 3.10)'
     '';
 
     nativeBuildInputs = [
