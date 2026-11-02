@@ -38,7 +38,7 @@ with lib;
 
     # Since NixOS/nixpkgs#421660 the following options are required:
     pyproject = true;
-    build-system = with python3Packages; [setuptools];
+    build-system = with python3Packages; [distutils setuptools];
 
     nativeBuildInputs = [
       intltool
