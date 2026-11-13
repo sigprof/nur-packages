@@ -76,7 +76,7 @@ runs:
   using: composite
   steps:
     - name: Maximize build space for Nix
-      uses: wimpysworld/nothing-but-nix@687c797a730352432950c707ab493fcc951818d7
+      uses: wimpysworld/nothing-but-nix@b2574ec1cf1462bee0a34de0fb6ff11ad3c43cb2
       with:
         hatchet-protocol: carve
       if: (inputs.maximize-build-space == 'true') && (runner.os == 'Linux')
